@@ -1,0 +1,1073 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liver Transplantation: A Comprehensive Classification System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1ef;
+  --panel:#ffffff;
+  --ink:#152220;
+  --muted:#5c6c67;
+  --line:#d3dad6;
+  --neutral:#3c4744;
+  --artery:#a13d2e;
+  --vein:#2c5c8a;
+  --bile:#7a8a2c;
+  --codebg:#101b1a;
+  --codeline:#25403c;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'IBM Plex Sans',sans-serif;
+  line-height:1.5;
+}
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;margin:0 0 .3em;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 60px;}
+
+header.top{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;margin-bottom:18px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:14px;
+}
+header.top .eyebrow{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);
+}
+header.top h1{font-size:clamp(22px,3vw,32px);}
+header.top .src{font-size:12px;color:var(--muted);max-width:440px;text-align:right;}
+
+nav.tabs{
+  display:flex;gap:2px;margin-bottom:20px;background:var(--line);
+  border-radius:var(--radius);padding:3px;
+}
+nav.tabs button{
+  flex:1;border:none;background:transparent;padding:12px 10px;
+  font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:14px;
+  color:var(--muted);cursor:pointer;border-radius:8px;transition:.15s;
+}
+nav.tabs button.active{background:var(--panel);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+nav.tabs button:hover:not(.active){color:var(--ink);}
+
+.panel{display:none;}
+.panel.active{display:block;}
+
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:14px;
+}
+.card h2{font-size:15px;text-transform:uppercase;letter-spacing:.06em;
+  font-family:'IBM Plex Sans',sans-serif;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;}
+.dot.neutral{background:var(--neutral);}
+.dot.artery{background:var(--artery);}
+.dot.vein{background:var(--vein);}
+.dot.bile{background:var(--bile);}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+label.field{display:block;font-size:12.5px;color:var(--muted);margin-bottom:4px;font-weight:600;}
+select, input[type=number], textarea{
+  width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;
+  font-family:'IBM Plex Sans',sans-serif;font-size:14px;background:#fbfcfb;color:var(--ink);
+}
+select:focus, input:focus, textarea:focus, button:focus-visible{
+  outline:2px solid var(--vein);outline-offset:1px;
+}
+.modrow{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;align-items:center;}
+.modrow label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);font-weight:500;}
+.modrow input[type=checkbox], .modrow input[type=radio]{accent-color:var(--vein);}
+.hidden{display:none !important;}
+
+/* the specimen label / code strip */
+.codestrip-wrap{position:sticky;top:12px;z-index:5;margin-bottom:18px;}
+.codestrip{
+  background:var(--codebg);border-radius:var(--radius);padding:16px 18px;
+  color:#eef1ef;
+}
+.codestrip .label{
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:#9fb3ae;margin-bottom:8px;
+}
+.codestrip .chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:15px;}
+.chip{padding:3px 8px;border-radius:5px;background:rgba(255,255,255,.08);white-space:normal;}
+.chip sup{font-size:.7em;line-height:0;}
+.chip.neutral{border-bottom:2px solid #8a938f;}
+.chip.artery{border-bottom:2px solid var(--artery);}
+.chip.vein{border-bottom:2px solid var(--vein);}
+.chip.bile{border-bottom:2px solid var(--bile);}
+.chip.unknown{background:rgba(201,138,58,.16);border-bottom:2px dashed #c98a3a;color:#f0cd9a;}
+.slash{color:#5c6c67;}
+.codestrip .legend{margin-top:10px;font-size:11px;color:#9fb3ae;display:flex;gap:16px;flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:5px;}
+.legend .sw{width:8px;height:8px;border-radius:2px;display:inline-block;}
+
+.readout{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;
+}
+.readout h2{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.readout p{margin:0;font-size:15px;}
+
+button.primary{
+  background:var(--ink);color:#fff;border:none;border-radius:8px;
+  padding:11px 18px;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:14px;
+  cursor:pointer;
+}
+button.primary:hover{background:#0c1615;}
+
+.small{font-size:12.5px;color:var(--muted);}
+.err{color:var(--artery);font-size:13.5px;margin-top:8px;}
+.warn-box{
+  background:#fbf5ea;border:1px solid #e3d3a8;border-radius:8px;padding:10px 12px;
+  font-size:13px;color:#6b5522;margin-top:10px;
+}
+
+textarea{min-height:170px;resize:vertical;font-family:'IBM Plex Sans',sans-serif;}
+.codeinput{font-family:'IBM Plex Mono',monospace;font-size:16px;min-height:60px;}
+
+footer{margin-top:26px;font-size:12px;color:var(--muted);text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="eyebrow">Clinical Documentation · Transplant Surgery</div>
+      <h1>Liver Transplantation: A Comprehensive Classification System</h1>
+    </div>
+    <div class="src">Based on: Beetz, Genchev, et al. … Oldhafer, Palzer, Vondran, “Defining Liver Transplantation: Proposal for a Comprehensive Classification System” — nomenclature for donor, organ, preservation, implantation, and anastomosis type.</div>
+  </header>
+
+  <nav class="tabs">
+    <button class="active" data-tab="build">1 · Dropdown → Code</button>
+    <button data-tab="code2text">2 · Code → Operative Report</button>
+  </nav>
+
+  <!-- ============ TAB 1: BUILDER ============ -->
+  <div class="panel active" id="panel-build">
+
+    <div class="codestrip-wrap">
+      <div class="codestrip">
+        <div class="label">Live Code</div>
+        <div class="chips" id="chipRow"></div>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--neutral)"></span>Donor / Organ / Preservation / Implantation</span>
+          <span><span class="sw" style="background:var(--vein)"></span>Cava / Portal Vein (venous)</span>
+          <span><span class="sw" style="background:var(--artery)"></span>Artery</span>
+          <span><span class="sw" style="background:var(--bile)"></span>Bile Duct</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2><span class="dot neutral"></span>Donor Type (D)</h2>
+        <label class="field" for="sel-D">Category</label>
+        <select id="sel-D"></select>
+        <div class="modrow">
+          <label><input type="checkbox" id="chk-Dnrp" disabled> -NRP Normothermic regional perfusion — DCD donors only</label>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span class="dot neutral"></span>Organ Type (O)</h2>
+        <label class="field" for="sel-O">Graft extent</label>
+        <select id="sel-O"></select>
+      </div>
+    </div>
+
+    <div class="grid3">
+      <div class="card">
+        <h2><span class="dot neutral"></span>Preservation (P)</h2>
+        <select id="sel-P"></select>
+        <div class="modrow" id="P-upfront-row">
+          <label><input type="checkbox" id="chk-Pupfront"> -UMP Upfront machine perfusion</label>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span class="dot neutral"></span>Implantation Type (I)</h2>
+        <select id="sel-I"></select>
+      </div>
+      <div class="card">
+        <h2><span class="dot neutral"></span>Retransplantation (X)</h2>
+        <select id="sel-X"></select>
+        <div id="X-n-row" class="hidden" style="margin-top:10px;">
+          <label class="field" for="num-Xn">Ordinal number of the current liver transplantation (including the initial one)</label>
+          <input type="number" id="num-Xn" min="2" value="2">
+          <p class="small" style="margin-top:4px;">2 = first retransplantation (X.2.#2), 3 = second retransplantation (X.2.#3), …</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h2><span class="dot neutral"></span>Multi-organ Transplantation (Y)</h2>
+        <select id="sel-Y"></select>
+        <div id="Y-organs-row" class="hidden" style="margin-top:10px;">
+          <label class="field" for="txt-Yorgans">Organs transplanted together with the liver (optional)</label>
+          <input type="text" id="txt-Yorgans" placeholder="e.g. pancreas, small bowel" style="width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:14px;">
+          <p class="small" style="margin-top:4px;">Appears in the wording only, not in the code.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span class="dot neutral"></span>Implantation Technique (T)</h2>
+        <select id="sel-T"></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot vein"></span>Cava (C)</h2>
+      <div class="grid3">
+        <div>
+          <label class="field" for="sel-C">Technique</label>
+          <select id="sel-C"></select>
+        </div>
+        <div>
+          <label class="field">Additional</label>
+          <div class="modrow">
+            <label><input type="checkbox" id="chk-Cvvbp"> + veno-venous bypass (VVBP)</label>
+            <label><input type="checkbox" id="chk-Cpcs"> + portocaval shunt (PCS)</label>
+          </div>
+          <p class="small" style="margin-top:6px;">Per the nomenclature, VVBP and/or PCS are both marked with the same “+” — the code cannot distinguish which was used, only the wording below does.</p>
+        </div>
+        <div>
+          <label class="field" for="sel-Cgraft">Interposition graft</label>
+          <select id="sel-Cgraft">
+            <option value="">— none —</option>
+            <option value="allo">* alloplastic</option>
+            <option value="auto">** autologous/allogenic</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot vein"></span>Portal Vein (PV)</h2>
+      <div class="grid2">
+        <div>
+          <label class="field" for="sel-PV">Technique</label>
+          <select id="sel-PV"></select>
+        </div>
+        <div>
+          <label class="field" for="sel-PVgraft">Interposition graft</label>
+          <select id="sel-PVgraft">
+            <option value="">— none —</option>
+            <option value="allo">* alloplastic</option>
+            <option value="auto">** autologous/allogenic</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot artery"></span>Artery (AR / AD)</h2>
+      <div style="max-width:220px;margin-bottom:14px;">
+        <label class="field" for="num-Acount">Number of anastomoses</label>
+        <input type="number" id="num-Acount" min="1" value="1">
+      </div>
+      <div id="artery-rows"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot bile"></span>Bile Duct (B)</h2>
+      <div class="grid3">
+        <div>
+          <label class="field" for="sel-B">Technique</label>
+          <select id="sel-B"></select>
+        </div>
+        <div>
+          <label class="field" for="num-Bcount">Number of anastomoses</label>
+          <input type="number" id="num-Bcount" min="1" value="1">
+        </div>
+        <div>
+          <label class="field" for="sel-Bdrain">Drain</label>
+          <select id="sel-Bdrain">
+            <option value="">— none —</option>
+            <option value="EXT">-EXT — external</option>
+            <option value="INT">-INT — internal</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <h2>Operative Report Wording</h2>
+      <p id="buildText"></p>
+    </div>
+    <div class="warn-box hidden" id="buildMissing" style="margin-top:-4px;"></div>
+
+  </div>
+
+  <!-- ============ TAB 2: CODE -> TEXT ============ -->
+  <div class="panel" id="panel-code2text">
+    <div class="card">
+      <h2>Enter Code</h2>
+      <p class="small">Format per the nomenclature, e.g. <span class="mono">D.1/O.1/P.2.1/I.1/X.1/Y.1/T.1/C.1/PV.1/#1-AR.1.2-AD.1.2/B.1.1</span>. Partial codes are supported — any part left out or written as “[n.a.]” (e.g. T[n.a.]) is reported as missing below.</p>
+      <input type="text" id="codeinput" class="codeinput" placeholder="D.1/O.1/P.2.1/I.1/X.1/Y.1/T.1/C.1/PV.1/#1-AR.1.2-AD.1.2/B.1.1">
+      <div style="margin-top:12px;">
+        <button class="primary" id="btnDecode">Translate to Operative Report Text</button>
+      </div>
+      <div class="err hidden" id="decodeErr"></div>
+    </div>
+    <div class="readout hidden" id="c2t-result">
+      <h2>Operative Report Wording</h2>
+      <p id="c2t-text"></p>
+      <div class="warn-box hidden" id="c2t-missing" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <footer>LTx-Code · Interactive tool based on the proposed nomenclature for liver transplantation. Does not replace structured documentation in the hospital information system.</footer>
+</div>
+
+<script>
+/* ============================================================
+   1. NOMENCLATURE  (manuscript version of 18 Oct 2026)
+      Code order: D / O / P / I / X / Y / T / C / PV / A / B
+   ============================================================ */
+
+const NRP_SUFFIX = '-NRP';       // normothermic regional perfusion (DCD donors), appended to the donor code
+const UMP_SUFFIX = '-UMP';       // upfront machine perfusion, appended to the preservation code
+const NA = '[n.a.]';             // appended to the category letter when information is missing
+
+const OPTIONS = {
+  D: [
+    ['D.1','D.1 — Donation after Brain Death (DBD)'],
+    ['D.2.1','D.2.1 — DCD, Maastricht I (dead on arrival)'],
+    ['D.2.2','D.2.2 — DCD, Maastricht II (unsuccessful resuscitation)'],
+    ['D.2.3','D.2.3 — DCD, Maastricht III (withdrawal of life-sustaining treatment)'],
+    ['D.2.4','D.2.4 — DCD, Maastricht IV (cardiac arrest in a brain-dead donor)'],
+    ['D.2.5','D.2.5 — DCD, Maastricht V (donation following medical assistance in dying, MAID)'],
+    ['D.3.1','D.3.1 — Living donation, related'],
+    ['D.3.2','D.3.2 — Living donation, unrelated'],
+    ['D.other','D.other — Other (xenotransplantation, MAID, domino liver transplantation)']
+  ],
+  O: [
+    ['O.1','O.1 — Full liver'],
+    ['O.2','O.2 — Right hemiliver (Sg. V–VIII)'],
+    ['O.3','O.3 — Left hemiliver (Sg. II–IV)'],
+    ['O.4','O.4 — Right hemiliver plus left medial section or extended right lobe (Sg. IV–VIII)'],
+    ['O.5','O.5 — Left lateral section (Sg. II–III)'],
+    ['O.6','O.6 — Right posterior section (Sg. VI–VII)'],
+    ['O.7','O.7 — Single segment'],
+    ['O.other','O.other — Other']
+  ],
+  P: [
+    ['P.1','P.1 — Static cold storage'],
+    ['P.2.1','P.2.1 — sHOPE (single portal hypothermic oxygenated perfusion)'],
+    ['P.2.2','P.2.2 — dHOPE (dual portal and arterial hypothermic oxygenated perfusion)'],
+    ['P.2.3','P.2.3 — NMP (normothermic machine perfusion)'],
+    ['P.2.4','P.2.4 — COR (controlled oxygenated rewarming)'],
+    ['P.2.5','P.2.5 — HOPE-COR-NMP'],
+    ['P.other','P.other — Other']
+  ],
+  I: [
+    ['I.1','I.1 — Orthotopic'],
+    ['I.2.1','I.2.1 — Auxiliary: APOLT'],
+    ['I.2.2','I.2.2 — Auxiliary: RAPID'],
+    ['I.other','I.other — Other']
+  ],
+  X: [
+    ['X.1','X.1 — No retransplantation (primary transplantation)'],
+    ['X.2','X.2 — Retransplantation']
+  ],
+  Y: [
+    ['Y.1','Y.1 — No multi-organ transplantation'],
+    ['Y.2','Y.2 — Multi-organ transplantation (including a liver graft)']
+  ],
+  T: [
+    ['T.1','T.1 — Conventional / open'],
+    ['T.2','T.2 — Laparoscopic'],
+    ['T.3','T.3 — Robotic'],
+    ['T.other','T.other — Other']
+  ],
+  C: [
+    ['C.1','C.1 — Cava replacement (classical anastomosis)'],
+    ['C.2.1','C.2.1 — Caval-sparing (piggy-back), side-to-side'],
+    ['C.2.2','C.2.2 — Caval-sparing (piggy-back), end-to-side'],
+    ['C.2.3','C.2.3 — Caval-sparing (piggy-back), hepatic vein(s) to cava'],
+    ['C.other','C.other — Other']
+  ],
+  PV: [
+    ['PV.1','PV.1 — End-to-end portal anastomosis'],
+    ['PV.2.1','PV.2.1 — Reno-to-portal anastomosis'],
+    ['PV.2.2','PV.2.2 — Cavo-to-portal anastomosis'],
+    ['PV.2.3','PV.2.3 — Jump graft from SMV'],
+    ['PV.other','PV.other — Other']
+  ],
+  AR: [
+    ['AR.1.1','AR.1.1 — Common hepatic artery'],
+    ['AR.1.2','AR.1.2 — Proper hepatic artery'],
+    ['AR.1.3','AR.1.3 — Gastroduodenal artery (GDA)'],
+    ['AR.1.4','AR.1.4 — Right hepatic artery'],
+    ['AR.1.5','AR.1.5 — Left hepatic artery'],
+    ['AR.1.6','AR.1.6 — Splenic artery'],
+    ['AR.2.1','AR.2.1 — Aberrant/accessory right hepatic artery'],
+    ['AR.2.2','AR.2.2 — Aberrant/accessory left hepatic artery'],
+    ['AR.2.3','AR.2.3 — Aberrant/accessory segmental artery'],
+    ['AR.3.1','AR.3.1 — Aorta, supratruncal'],
+    ['AR.3.2','AR.3.2 — Aorta, infrarenal'],
+    ['AR.other','AR.other — Other']
+  ],
+  AD: [
+    ['AD.1.1','AD.1.1 — Common hepatic artery'],
+    ['AD.1.2','AD.1.2 — Proper hepatic artery'],
+    ['AD.1.3','AD.1.3 — Gastroduodenal artery (GDA)'],
+    ['AD.1.4','AD.1.4 — Right hepatic artery'],
+    ['AD.1.5','AD.1.5 — Left hepatic artery'],
+    ['AD.1.6','AD.1.6 — Segmental artery'],
+    ['AD.2.1','AD.2.1 — Aberrant/accessory right hepatic artery'],
+    ['AD.2.2','AD.2.2 — Aberrant/accessory left hepatic artery'],
+    ['AD.2.3','AD.2.3 — Aberrant/accessory segmental artery'],
+    ['AD.other','AD.other — Other']
+  ],
+  B: [
+    ['B.1.1','B.1.1 — Bile-duct based, end-to-end anastomosis'],
+    ['B.1.2','B.1.2 — Bile-duct based, side-to-side anastomosis'],
+    ['B.2','B.2 — Biliodigestive anastomosis'],
+    ['B.3','B.3 — Combination of B.1 and B.2 (multiple anastomoses only)'],
+    ['B.other','B.other — Other']
+  ]
+};
+
+/* Sentence templates for the operative-report wording */
+const TXT = {
+  D: {
+    'D.1':'a deceased-donor liver after brain death (DBD)',
+    'D.2.1':'a deceased-donor liver after circulatory death (DCD, Maastricht type I)',
+    'D.2.2':'a deceased-donor liver after circulatory death (DCD, Maastricht type II)',
+    'D.2.3':'a deceased-donor liver after circulatory death (DCD, Maastricht type III)',
+    'D.2.4':'a deceased-donor liver after circulatory death (DCD, Maastricht type IV)',
+    'D.2.5':'a deceased-donor liver after circulatory death (DCD, Maastricht type V, donation following medical assistance in dying)',
+    'D.2[n.a.]':'a deceased-donor liver after circulatory death (DCD, Maastricht classification not specified)',
+    'D.3.1':'a living-donor liver from a related donor',
+    'D.3.2':'a living-donor liver from an unrelated donor',
+    'D.3[n.a.]':'a living-donor liver (relationship to the recipient not specified)',
+    'D.other':'an organ from a donor type not covered by the standard schema'
+  },
+  O: {
+    'O.1':'as a full liver graft',
+    'O.2':'as a right hemiliver graft (segments V–VIII)',
+    'O.3':'as a left hemiliver graft (segments II–IV)',
+    'O.4':'as a right hemiliver plus left medial section, or extended right lobe (segments IV–VIII)',
+    'O.5':'as a left lateral section graft (segments II–III)',
+    'O.6':'as a right posterior section graft (segments VI–VII)',
+    'O.7':'as a single-segment graft',
+    'O.other':'as a graft of a type not covered by the standard schema'
+  },
+  P: {
+    'P.1':'Preservation was performed by static cold storage.',
+    'P.2.1':'Preservation was performed by single portal hypothermic oxygenated perfusion (sHOPE).',
+    'P.2.2':'Preservation was performed by dual portal and arterial hypothermic oxygenated perfusion (dHOPE).',
+    'P.2.3':'Preservation was performed by normothermic machine perfusion (NMP).',
+    'P.2.4':'Preservation was performed by controlled oxygenated rewarming (COR).',
+    'P.2.5':'Preservation was performed by combined HOPE-COR-NMP perfusion.',
+    'P.2[n.a.]':'Preservation was performed by machine perfusion (exact mode not specified).',
+    'P.other':'Preservation was performed using a method not covered by the standard schema.'
+  },
+  I: {
+    'I.1':'Implantation was performed orthotopically, with complete removal of the native liver.',
+    'I.2.1':'Implantation was performed in an auxiliary manner as APOLT (Auxiliary Partial Orthotopic Liver Transplantation).',
+    'I.2.2':'Implantation was performed in an auxiliary manner as RAPID (Resection and Partial Liver Transplantation with Delayed Total Hepatectomy).',
+    'I.2[n.a.]':'Implantation was performed in an auxiliary manner (APOLT vs. RAPID not specified).',
+    'I.other':'Implantation was performed using a type not covered by the standard schema.'
+  },
+  X: {
+    'X.1':'This was a primary liver transplantation (no previous liver transplantation).'
+  },
+  Y: {
+    'Y.1':'No multi-organ transplantation was performed.'
+  },
+  T: {
+    'T.1':'conventional open',
+    'T.2':'laparoscopic',
+    'T.3':'robotic',
+    'T.other':'non-standard'
+  },
+  C: {
+    'C.1':'Caval reconstruction was performed as cava replacement (classical anastomosis).',
+    'C.2.1':'Caval reconstruction was performed caval-sparing (piggy-back) with a side-to-side anastomosis.',
+    'C.2.2':'Caval reconstruction was performed caval-sparing (piggy-back) with an end-to-side anastomosis.',
+    'C.2.3':'Caval reconstruction was performed caval-sparing (piggy-back) by anastomosing the hepatic vein(s) to the recipient cava.',
+    'C.2[n.a.]':'Caval reconstruction was performed caval-sparing (piggy-back); exact anastomotic technique not specified.',
+    'C.other':'Caval reconstruction was performed using a technique not covered by the standard schema.'
+  },
+  PV: {
+    'PV.1':'The portal vein was reconstructed by an end-to-end portal anastomosis.',
+    'PV.2.1':'The portal vein was reconstructed by a reno-to-portal anastomosis.',
+    'PV.2.2':'The portal vein was reconstructed by a cavo-to-portal anastomosis.',
+    'PV.2.3':'The portal vein was reconstructed using a jump graft from the superior mesenteric vein (SMV).',
+    'PV.2[n.a.]':'The portal vein was reconstructed by an other-to-portal anastomosis (exact technique not specified).',
+    'PV.other':'The portal vein was reconstructed using a technique not covered by the standard schema.'
+  },
+  AR: {
+    'AR.1.1':'common hepatic artery',
+    'AR.1.2':'proper hepatic artery',
+    'AR.1.3':'gastroduodenal artery (GDA)',
+    'AR.1.4':'right hepatic artery',
+    'AR.1.5':'left hepatic artery',
+    'AR.1.6':'splenic artery',
+    'AR.1[n.a.]':'celiac trunk or one of its branches (exact branch not specified)',
+    'AR.2.1':'aberrant/accessory right hepatic artery',
+    'AR.2.2':'aberrant/accessory left hepatic artery',
+    'AR.2.3':'aberrant/accessory segmental artery',
+    'AR.2[n.a.]':'aberrant/accessory artery (exact vessel not specified)',
+    'AR.3.1':'aorta, supratruncal (extra-anatomic)',
+    'AR.3.2':'aorta, infrarenal (extra-anatomic)',
+    'AR.3[n.a.]':'aorta (anastomotic level not specified)',
+    'AR.other':'artery not covered by the standard schema'
+  },
+  AD: {
+    'AD.1.1':'common hepatic artery',
+    'AD.1.2':'proper hepatic artery',
+    'AD.1.3':'gastroduodenal artery (GDA)',
+    'AD.1.4':'right hepatic artery',
+    'AD.1.5':'left hepatic artery',
+    'AD.1.6':'segmental artery',
+    'AD.1[n.a.]':'artery of conventional anatomy (exact branch not specified)',
+    'AD.2.1':'aberrant/accessory right hepatic artery',
+    'AD.2.2':'aberrant/accessory left hepatic artery',
+    'AD.2.3':'aberrant/accessory segmental artery',
+    'AD.2[n.a.]':'aberrant/accessory artery (exact vessel not specified)',
+    'AD.other':'artery not covered by the standard schema'
+  },
+  B: {
+    'B.1.1':'Biliary reconstruction was performed as a bile-duct based end-to-end anastomosis.',
+    'B.1.2':'Biliary reconstruction was performed as a bile-duct based side-to-side anastomosis.',
+    'B.1[n.a.]':'Biliary reconstruction was performed as a bile-duct based anastomosis (end-to-end vs. side-to-side not specified).',
+    'B.2':'Biliary reconstruction was performed as a biliodigestive anastomosis.',
+    'B.3':'Biliary reconstruction was performed as a combination of bile-duct based and biliodigestive anastomoses.',
+    'B.other':'Biliary reconstruction was performed using a technique not covered by the standard schema.'
+  }
+};
+
+function fill(id, list){
+  const el = document.getElementById(id);
+  el.innerHTML = '<option value="">— not specified —</option>' +
+    list.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
+}
+
+fill('sel-D', OPTIONS.D); fill('sel-O', OPTIONS.O); fill('sel-P', OPTIONS.P);
+fill('sel-I', OPTIONS.I); fill('sel-X', OPTIONS.X); fill('sel-Y', OPTIONS.Y);
+fill('sel-T', OPTIONS.T); fill('sel-C', OPTIONS.C); fill('sel-PV', OPTIONS.PV);
+fill('sel-B', OPTIONS.B);
+// The arterial selects are created per anastomosis by renderArteryRows() below.
+
+/* ============================================================
+   1b. MISSING-INFO HANDLING (shared by builder and decoder)
+   ============================================================ */
+
+const CATEGORY_LABEL = {
+  D:'Donor Type (D)', O:'Organ Type (O)', P:'Preservation Type (P)',
+  I:'Implantation Type (I)', X:'Retransplantation (X)', Y:'Multi-organ Transplantation (Y)',
+  T:'Implantation Technique (T)', C:'Caval Approach (C)', PV:'Portal Vein Reconstruction (PV)',
+  AR:'Recipient Artery (AR)', AD:'Donor Artery (AD)', B:'Bile Duct Anastomosis (B)'
+};
+
+// Category family identified, but the exact sub-type is missing
+const AMBIGUOUS_MSG = {
+  'D.2[n.a.]': 'Donor Type (D) — DCD identified, Maastricht type not specified',
+  'D.3[n.a.]': 'Donor Type (D) — living donation identified, relationship not specified',
+  'P.2[n.a.]': 'Preservation Type (P) — machine perfusion identified, exact mode not specified',
+  'I.2[n.a.]': 'Implantation Type (I) — auxiliary identified, APOLT/RAPID not specified',
+  'C.2[n.a.]': 'Caval Approach (C) — caval-sparing (piggy-back) identified, exact technique not specified',
+  'PV.2[n.a.]': 'Portal Vein Reconstruction (PV) — other-to-portal identified, exact technique not specified',
+  'AR.1[n.a.]': 'Recipient Artery (AR) — celiac trunk identified, exact branch not specified',
+  'AR.2[n.a.]': 'Recipient Artery (AR) — aberrant/accessory artery identified, exact vessel not specified',
+  'AR.3[n.a.]': 'Recipient Artery (AR) — aorta identified, anastomotic level not specified',
+  'AD.1[n.a.]': 'Donor Artery (AD) — conventional artery identified, exact branch not specified',
+  'AD.2[n.a.]': 'Donor Artery (AD) — aberrant/accessory artery identified, exact vessel not specified',
+  'B.1[n.a.]': 'Bile Duct Anastomosis (B) — bile-duct based identified, end-to-end/side-to-side not specified'
+};
+
+function collectMissing(state){
+  const missing = [];
+  function push(label){ if (!missing.includes(label)) missing.push(label); }
+  function check(val, key){
+    if (val === null || val === undefined || val === ''){ push(CATEGORY_LABEL[key]); return; }
+    if (typeof val === 'string' && val.endsWith(NA)) push(AMBIGUOUS_MSG[val] || CATEGORY_LABEL[key]);
+  }
+  check(state.D.code,'D'); check(state.O,'O'); check(state.P.code,'P');
+  check(state.I,'I'); check(state.X.code,'X'); check(state.Y.code,'Y');
+  check(state.T,'T'); check(state.C.code,'C'); check(state.PV.code,'PV');
+  if (state.X.code === 'X.2' && !state.X.n) push('Retransplantation (X) — ordinal number of the current transplantation not specified');
+  const pairs = (state.A && state.A.pairs && state.A.pairs.length) ? state.A.pairs : [{first:null, second:null}];
+  pairs.forEach(p => { check(p.first, 'AR'); check(p.second, 'AD'); });
+  check(state.B.code,'B');
+  return missing;
+}
+
+/* ============================================================
+   2. STATE + CODE ASSEMBLY
+   ============================================================ */
+
+function emptyState(){
+  return {
+    D: { code:null, nrp:false },
+    O: null,
+    P: { code:null, upfront:false },
+    I: null,
+    X: { code:null, n:null },
+    Y: { code:null, organs:'' },
+    T: null,
+    C: { code:null, vvbp:false, pcs:false, plus:false, graft:null },
+    PV: { code:null, graft:null },
+    A: { pairs:[{ first:null, second:null, graft:null }], count:1 },
+    B: { code:null, count:1, drain:null }
+  };
+}
+
+function clampCount(id){
+  let n = parseInt(document.getElementById(id).value, 10);
+  if (isNaN(n) || n < 1) n = 1;
+  if (n > 10) n = 10;
+  return n;
+}
+
+function readBuilderState(){
+  const v = id => document.getElementById(id).value || null;
+  const acount = clampCount('num-Acount');
+  const pairs = [];
+  for (let i = 0; i < acount; i++){
+    const a1 = document.getElementById('sel-A1-' + i);
+    const a2 = document.getElementById('sel-A2-' + i);
+    const ag = document.getElementById('sel-Agraft-' + i);
+    pairs.push({
+      first: (a1 && a1.value) || null,
+      second: (a2 && a2.value) || null,
+      graft: (ag && ag.value) || null
+    });
+  }
+  const xn = parseInt(document.getElementById('num-Xn').value, 10);
+  return {
+    D: { code: v('sel-D'), nrp: document.getElementById('chk-Dnrp').checked },
+    O: v('sel-O'),
+    P: { code: v('sel-P'), upfront: document.getElementById('chk-Pupfront').checked },
+    I: v('sel-I'),
+    X: { code: v('sel-X'), n: (isNaN(xn) || xn < 2) ? 2 : xn },
+    Y: { code: v('sel-Y'), organs: document.getElementById('txt-Yorgans').value.trim() },
+    T: v('sel-T'),
+    C: {
+      code: v('sel-C'),
+      vvbp: document.getElementById('chk-Cvvbp').checked,
+      pcs: document.getElementById('chk-Cpcs').checked,
+      plus: false,
+      graft: v('sel-Cgraft')
+    },
+    PV: { code: v('sel-PV'), graft: v('sel-PVgraft') },
+    A: { pairs: pairs, count: acount },
+    B: { code: v('sel-B'), count: clampCount('num-Bcount'), drain: v('sel-Bdrain') }
+  };
+}
+
+function graftSuffix(g){ return g === 'auto' ? '**' : (g === 'allo' ? '*' : ''); }
+function seg(code, letter){ return code || (letter + NA); }
+
+// Arterial segment:  #n-<recipient>-<donor>[*], <recipient>-<donor>[*], ...
+// e.g. #2-AR.2.1-AD.2.1, AR.2.2-AD.1.2
+function buildArterySegment(a){
+  const pairs = (a && a.pairs && a.pairs.length) ? a.pairs : [{first:null, second:null, graft:null}];
+  const allEmpty = pairs.every(p => !p.first && !p.second && !p.graft);
+  if (allEmpty && a.count === 1) return 'A' + NA;
+  const items = pairs.map(p =>
+    (p.first || ('AR' + NA)) + '-' + (p.second || ('AD' + NA)) + graftSuffix(p.graft));
+  return '#' + a.count + '-' + items.join(', ');
+}
+
+// Bile duct segment:  B.1.1[-EXT|-INT]   or, for multiple anastomoses,  #n-B.1.1[-EXT|-INT]
+function buildBileSegment(b){
+  if (!b.code && b.count === 1 && !b.drain) return 'B' + NA;
+  const core = (b.code || ('B' + NA)) + (b.drain ? '-' + b.drain : '');
+  return (b.count > 1 ? '#' + b.count + '-' : '') + core;
+}
+
+function buildCode(s){
+  const d = seg(s.D.code, 'D') + (s.D.nrp ? NRP_SUFFIX : '');
+  const o = seg(s.O, 'O');
+  const p = seg(s.P.code, 'P') + (s.P.upfront ? UMP_SUFFIX : '');
+  const i = seg(s.I, 'I');
+  const x = seg(s.X.code, 'X') + ((s.X.code === 'X.2' && s.X.n) ? '.#' + s.X.n : '');
+  const y = seg(s.Y.code, 'Y');
+  const t = seg(s.T, 'T');
+  const plus = (s.C.vvbp || s.C.pcs || s.C.plus) ? '+' : '';
+  const c = seg(s.C.code, 'C') + plus + graftSuffix(s.C.graft);
+  const pv = seg(s.PV.code, 'PV') + graftSuffix(s.PV.graft);
+  const a = buildArterySegment(s.A);
+  const b = buildBileSegment(s.B);
+  return [d, o, p, i, x, y, t, c, pv, a, b].join('/'); // D/O/P/I/X/Y/T/C/PV/A/B
+}
+
+function segmentClass(s){
+  if (s.includes(NA)) return 'unknown';
+  if (/^(C|PV)[.\[]/.test(s)) return 'vein';
+  if (/^#\d+-A/.test(s) || s.startsWith('A[')) return 'artery';
+  if (/^#\d+-B/.test(s) || /^B[.\[]/.test(s)) return 'bile';
+  return 'neutral';
+}
+
+function renderChips(container, code){
+  const parts = code.split('/');
+  container.innerHTML = parts.map(part => {
+    if (part === '') return '';
+    const cls = segmentClass(part);
+    return `<span class="chip ${cls}">${part}</span>`;
+  }).join('<span class="slash">/</span>');
+}
+
+/* ============================================================
+   3. GENERATE ENGLISH PROSE FROM STATE
+   ============================================================ */
+
+function graftClause(g){
+  if (!g) return '';
+  return ', using an ' + (g === 'auto' ? 'autologous/allogenic' : 'alloplastic') + ' interposition graft';
+}
+
+// Text for one arterial anastomosis, e.g. "donor proper hepatic artery to the recipient proper hepatic artery"
+function arteryPairText(p){
+  if (!p.first && !p.second) return null;
+  const rec = TXT.AR[p.first] || 'artery (not specified)';
+  const don = TXT.AD[p.second] || 'artery (not specified)';
+  return `donor ${don} to the recipient ${rec}` + graftClause(p.graft);
+}
+
+function generateText(s){
+  const sentences = [];
+
+  const donorBase = TXT.D[s.D.code] || 'a donor liver of unspecified type';
+  const donor = donorBase + (s.D.nrp ? ' with normothermic regional perfusion (NRP)' : '');
+  const organ = TXT.O[s.O] || '';
+  sentences.push(`A liver transplantation was performed using ${donor}${organ ? ', ' + organ : ''}.`);
+
+  let pSentence = TXT.P[s.P.code] || '';
+  if (pSentence && s.P.upfront) pSentence += ' Machine perfusion was started upfront.';
+  if (pSentence) sentences.push(pSentence);
+
+  sentences.push(TXT.I[s.I] || '');
+
+  if (s.X.code === 'X.2'){
+    sentences.push(s.X.n >= 2
+      ? `This was a liver retransplantation (liver transplantation no. ${s.X.n}, i.e. retransplantation no. ${s.X.n - 1}).`
+      : 'This was a liver retransplantation (a previous liver graft had been transplanted).');
+  } else if (s.X.code === 'X.1'){
+    sentences.push(TXT.X['X.1']);
+  }
+
+  if (s.Y.code === 'Y.2'){
+    sentences.push('The liver was transplanted as part of a multi-organ graft' +
+      (s.Y.organs ? ` (${s.Y.organs})` : '') + '.');
+  } else if (s.Y.code === 'Y.1'){
+    sentences.push(TXT.Y['Y.1']);
+  }
+
+  const tech = TXT.T[s.T];
+  if (tech) sentences.push(`The procedure was performed using a ${tech} approach.`);
+
+  let cSentence = TXT.C[s.C.code] || '';
+  if (cSentence){
+    if (s.C.vvbp && s.C.pcs) cSentence += ' A veno-venous bypass and a portocaval shunt were used for intraoperative hemodynamic support.';
+    else if (s.C.vvbp) cSentence += ' A veno-venous bypass was used for intraoperative hemodynamic support.';
+    else if (s.C.pcs) cSentence += ' A portocaval shunt was used for intraoperative hemodynamic support.';
+    else if (s.C.plus) cSentence += ' A veno-venous bypass and/or a portocaval shunt was used for intraoperative hemodynamic support.';
+    if (s.C.graft) cSentence += ' An ' + (s.C.graft === 'auto' ? 'autologous/allogenic' : 'alloplastic') + ' interposition graft was used for this.';
+    sentences.push(cSentence);
+  }
+
+  let pvSentence = TXT.PV[s.PV.code] || '';
+  if (pvSentence){
+    if (s.PV.graft) pvSentence = pvSentence.replace(/\.$/, '') + graftClause(s.PV.graft) + '.';
+    sentences.push(pvSentence);
+  }
+
+  const pairs = (s.A && s.A.pairs && s.A.pairs.length) ? s.A.pairs : [];
+  const pairTexts = pairs.map(arteryPairText).filter(Boolean);
+  if (pairTexts.length === 1 && pairs.length === 1){
+    sentences.push(`Arterial reconstruction was performed by anastomosing the ${pairTexts[0]}.`);
+  } else if (pairTexts.length){
+    sentences.push(`Arterial reconstruction was performed via ${pairs.length} anastomoses: ` +
+      pairs.map((p, i) => `(${i + 1}) ${arteryPairText(p) || 'not specified'}`).join('; ') + '.');
+  }
+
+  let bSentence = TXT.B[s.B.code] || '';
+  if (bSentence){
+    if (s.B.count > 1) bSentence = bSentence.replace(/\.$/, ` (${s.B.count} anastomoses).`);
+    if (s.B.drain === 'EXT') bSentence += ' An external biliary drain was placed.';
+    if (s.B.drain === 'INT') bSentence += ' An internal biliary drain was placed.';
+    sentences.push(bSentence);
+  }
+
+  return sentences.filter(Boolean).join(' ');
+}
+
+/* ============================================================
+   4. BUILDER: live updates
+   ============================================================ */
+
+function renderArteryRows(){
+  const count = clampCount('num-Acount');
+  const container = document.getElementById('artery-rows');
+
+  // keep already selected values when the number of anastomoses changes
+  const existing = [];
+  let i = 0;
+  while (document.getElementById('sel-A1-' + i)){
+    existing.push({
+      first: document.getElementById('sel-A1-' + i).value,
+      second: document.getElementById('sel-A2-' + i).value,
+      graft: document.getElementById('sel-Agraft-' + i).value
+    });
+    i++;
+  }
+
+  let html = '';
+  for (let n = 0; n < count; n++){
+    html += `
+      <div class="grid3" style="${n > 0 ? 'margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);' : ''}">
+        <div>
+          <label class="field" for="sel-A1-${n}">Anastomosis ${n + 1} — Recipient vessel (AR)</label>
+          <select id="sel-A1-${n}"></select>
+        </div>
+        <div>
+          <label class="field" for="sel-A2-${n}">Anastomosis ${n + 1} — Donor vessel (AD)</label>
+          <select id="sel-A2-${n}"></select>
+        </div>
+        <div>
+          <label class="field" for="sel-Agraft-${n}">Interposition graft</label>
+          <select id="sel-Agraft-${n}">
+            <option value="">— none —</option>
+            <option value="allo">* alloplastic</option>
+            <option value="auto">** autologous/allogenic</option>
+          </select>
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+
+  for (let n = 0; n < count; n++){
+    fill('sel-A1-' + n, OPTIONS.AR);
+    fill('sel-A2-' + n, OPTIONS.AD);
+    if (existing[n]){
+      document.getElementById('sel-A1-' + n).value = existing[n].first || '';
+      document.getElementById('sel-A2-' + n).value = existing[n].second || '';
+      document.getElementById('sel-Agraft-' + n).value = existing[n].graft || '';
+    }
+    ['sel-A1-', 'sel-A2-', 'sel-Agraft-'].forEach(prefix =>
+      document.getElementById(prefix + n).addEventListener('change', renderBuilder));
+  }
+}
+
+function renderBuilder(){
+  // NRP (⸸) only applies to donation after circulatory death
+  const dVal = document.getElementById('sel-D').value;
+  const nrpEl = document.getElementById('chk-Dnrp');
+  const isDCD = dVal.startsWith('D.2');
+  nrpEl.disabled = !isDCD;
+  if (!isDCD) nrpEl.checked = false;
+
+  // retransplantation number / multi-organ details only when relevant
+  document.getElementById('X-n-row').classList.toggle('hidden', document.getElementById('sel-X').value !== 'X.2');
+  document.getElementById('Y-organs-row').classList.toggle('hidden', document.getElementById('sel-Y').value !== 'Y.2');
+
+  const s = readBuilderState();
+  renderChips(document.getElementById('chipRow'), buildCode(s));
+  document.getElementById('buildText').textContent = generateText(s);
+
+  const missing = collectMissing(s);
+  const missingBox = document.getElementById('buildMissing');
+  if (missing.length){
+    missingBox.innerHTML = '<strong>Missing:</strong> ' + missing.join(' · ');
+    missingBox.classList.remove('hidden');
+  } else {
+    missingBox.classList.add('hidden');
+  }
+}
+
+['sel-D','chk-Dnrp','sel-O','sel-P','chk-Pupfront','sel-I','sel-X','num-Xn','sel-Y','txt-Yorgans','sel-T',
+ 'sel-C','chk-Cvvbp','chk-Cpcs','sel-Cgraft','sel-PV','sel-PVgraft','sel-B','num-Bcount','sel-Bdrain'
+].forEach(id => {
+  document.getElementById(id).addEventListener('change', renderBuilder);
+  document.getElementById(id).addEventListener('input', renderBuilder);
+});
+document.getElementById('num-Acount').addEventListener('change', () => { renderArteryRows(); renderBuilder(); });
+document.getElementById('num-Acount').addEventListener('input', () => { renderArteryRows(); renderBuilder(); });
+renderArteryRows();
+renderBuilder();
+
+/* ============================================================
+   5. TABS
+   ============================================================ */
+document.querySelectorAll('nav.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ============================================================
+   6. CODE -> TEXT (decoder)
+   ============================================================ */
+
+const CAT_PREFIX = { D:'D', O:'O', P:'P', I:'I', X:'X', Y:'Y', T:'T', C:'C', PV:'PV', AR:'AR', AD:'AD', B:'B' };
+
+// Family codes whose sub-type is not given. Written as e.g. "P.2[n.a.]"; a bare
+// family code such as "P.2" is read the same way (sub-type not specified).
+const FAMILY_NA = {
+  D:['D.2','D.3'], P:['P.2'], I:['I.2'], C:['C.2'], PV:['PV.2'],
+  AR:['AR.1','AR.2','AR.3'], AD:['AD.1','AD.2'], B:['B.1']
+};
+
+// All valid codes per category, incl. "<letter>[n.a.]" and "<family>[n.a.]"
+const VALID_CODES = {};
+Object.keys(CAT_PREFIX).forEach(k => {
+  const set = new Set((OPTIONS[k] || []).map(o => o[0]));
+  set.add(CAT_PREFIX[k] + NA);
+  (FAMILY_NA[k] || []).forEach(f => set.add(f + NA));
+  VALID_CODES[k] = set;
+});
+
+// Finds the longest valid code that the token starts with; returns { code, rest }
+function matchCategory(tok, key){
+  const candidates = [...VALID_CODES[key]].sort((a,b) => b.length - a.length);
+  for (const c of candidates){
+    if (tok.startsWith(c)) return { code: c, rest: tok.slice(c.length) };
+  }
+  const bares = (FAMILY_NA[key] || []).slice().sort((a,b) => b.length - a.length);
+  for (const bare of bares){
+    if (tok.startsWith(bare)) return { code: bare + NA, rest: tok.slice(bare.length) };
+  }
+  return { code: null, rest: tok };
+}
+
+function graftFromRest(rest){
+  return rest.includes('**') ? 'auto' : (rest.includes('*') ? 'allo' : null);
+}
+
+// "#2-AD.2.1-AD.1.3, AR.1.2-AD.1.1"  ->  { pairs:[…], count:2 }
+function parseArtery(tok){
+  let count = null, body = tok;
+  const m = tok.match(/^#(\d+)-(.*)$/);
+  if (m){ count = parseInt(m[1], 10); body = m[2]; }
+  const pairs = body.split(/\s*,\s*/).filter(Boolean).map(item => {
+    const idx = item.indexOf('-');
+    const p1 = (idx === -1 ? item : item.slice(0, idx)).trim();
+    const p2 = (idx === -1 ? '' : item.slice(idx + 1)).trim();
+    const m1 = matchCategory(p1, 'AR');
+    const m2 = p2 ? matchCategory(p2, 'AD') : { code:null, rest:'' };
+    return { first: m1.code, second: m2.code, graft: graftFromRest(m2.rest) };
+  });
+  const n = Math.max(count || 0, pairs.length, 1);
+  while (pairs.length < n) pairs.push({ first:null, second:null, graft:null });
+  return { pairs, count: n };
+}
+
+// "B.1.1-EXT"  |  "#2-B.1.1-INT"
+function parseBile(tok){
+  let count = 1, body = tok;
+  const m = tok.match(/^#(\d+)-(.*)$/);
+  if (m){ count = parseInt(m[1], 10); body = m[2]; }
+  const first = body.split(/\s*,\s*/)[0].trim();
+  const mm = matchCategory(first, 'B');
+  const drain = /EXT/i.test(mm.rest) ? 'EXT' : (/INT/i.test(mm.rest) ? 'INT' : null);
+  return { code: mm.code, count, drain };
+}
+
+function parseCode(raw){
+  const tokens = raw.split('/').map(t => t.trim()).filter(t => t.length > 0);
+  const state = emptyState();
+
+  tokens.forEach(tok => {
+    // arterial / bile segments that start with the number of anastomoses
+    const hash = tok.match(/^#(\d+)-(A|B)/);
+    if (hash){
+      if (hash[2] === 'A') state.A = parseArtery(tok);
+      else state.B = parseBile(tok);
+      return;
+    }
+    // arterial segment written without "#n-"
+    if (/^A[RD][.\[]/.test(tok) && tok.includes('-')){ state.A = parseArtery(tok); return; }
+
+    const head = tok.match(/^(PV|D|O|P|I|X|Y|T|C|B|A)(?=[.\[])/);
+    if (!head) return;                       // not recognised -> stays "missing"
+    switch (head[1]){
+      case 'D': {
+        const m = matchCategory(tok, 'D');
+        state.D = { code: m.code, nrp: /NRP/i.test(m.rest) };
+        break;
+      }
+      case 'O': state.O = matchCategory(tok, 'O').code; break;
+      case 'P': {
+        const m = matchCategory(tok, 'P');
+        state.P = { code: m.code, upfront: /UMP/i.test(m.rest) };
+        break;
+      }
+      case 'I': state.I = matchCategory(tok, 'I').code; break;
+      case 'X': {
+        const m = matchCategory(tok, 'X');
+        const nm = m.rest.match(/^\.?#(\d+)/);
+        state.X = { code: m.code, n: nm ? parseInt(nm[1], 10) : null };
+        break;
+      }
+      case 'Y': state.Y.code = matchCategory(tok, 'Y').code; break;
+      case 'T': state.T = matchCategory(tok, 'T').code; break;
+      case 'C': {
+        const m = matchCategory(tok, 'C');
+        state.C.code = m.code;
+        if (m.code){
+          // "+" = venovenous bypass and/or portal caval shunt (not distinguishable in the code)
+          state.C.plus = m.rest.includes('+');
+          state.C.graft = graftFromRest(m.rest);
+        }
+        break;
+      }
+      case 'PV': {
+        const m = matchCategory(tok, 'PV');
+        state.PV.code = m.code;
+        if (m.code) state.PV.graft = graftFromRest(m.rest);
+        break;
+      }
+      case 'B': state.B = parseBile(tok); break;
+      case 'A': break;                         // "A[n.a.]" -> missing
+    }
+  });
+
+  return { state, missing: collectMissing(state) };
+}
+
+document.getElementById('btnDecode').addEventListener('click', () => {
+  const raw = document.getElementById('codeinput').value.trim();
+  const errBox = document.getElementById('decodeErr');
+  const resultBox = document.getElementById('c2t-result');
+  errBox.classList.add('hidden');
+  resultBox.classList.add('hidden');
+  if (!raw){ errBox.textContent = 'Please enter a code.'; errBox.classList.remove('hidden'); return; }
+
+  const { state, missing } = parseCode(raw);
+  document.getElementById('c2t-text').textContent =
+    generateText(state) || 'No information could be identified in the entered code. Please check the format (e.g. D.1/O.1/P.2.1/I.1/X.1/Y.1/T.1/C.1/PV.1/#1-AR.1.2-AD.1.2/B.1.1).';
+
+  const missingBox = document.getElementById('c2t-missing');
+  if (missing.length){
+    missingBox.innerHTML = '<strong>Missing:</strong> ' + missing.join(' · ');
+    missingBox.classList.remove('hidden');
+  } else {
+    missingBox.classList.add('hidden');
+  }
+  resultBox.classList.remove('hidden');
+});
+</script>
+</body>
+</html>
